@@ -15,7 +15,7 @@ def get_interval(tweet, time, N):
     m = 0
     tail = 0
     while True:
-        print(l)
+        #print(l)
         flag = [False] * int(((end-start)/l))
         for t in time:
             index = int((t-start)/l)
@@ -25,6 +25,7 @@ def get_interval(tweet, time, N):
         m = 0
         tail = 0
         tmp = 0
+        #print(flag)
         for i in range(len(flag)):
             if flag[i]:
                 tmp += 1
@@ -52,7 +53,7 @@ def get_interval(tweet, time, N):
     return result
 
 def separate_file(path):
-    fin = open('dataset/raw/' + path, 'r', encoding='utf8')
+    fin = open('dataset/raw2/' + path, 'r', encoding='utf8')
     tweet = []
     time = []
     lines = fin.readlines()
@@ -64,13 +65,19 @@ def separate_file(path):
             time.append(int(line.split('\t')[-1]))
             tweet.append(line[:-11])
         except:
-            break
-    print(path)
-    result = get_interval(tweet, time, 30)
+            print(path)
+            continue
+    #print(len(time))
+    result = get_interval(tweet, time, 20)
+    print(len(result))
     pkl.dump(result, fout)
     fout.close()
     fin.close()
 
-for (root, dir, files) in os.walk("dataset/raw"):
+for (root, dir, files) in os.walk("dataset/raw2"):
     for f in files:
         separate_file(f)
+
+# f = open("dataset/sep/4_1.pkl",'rb')
+# l = pkl.load(f)
+# print(len(l))
