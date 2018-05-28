@@ -1,4 +1,5 @@
 import numpy as np
+import pickle as pkl
 
 def get_interval(tweet, time, N):
     assert len(tweet) == len(time)
@@ -45,3 +46,18 @@ def get_interval(tweet, time, N):
             result[index] += (tweet[i] + ' ')
     return result
 
+def separate_file(path):
+    fin = open('Dataset/raw/' + path, 'r')
+    fout = open('Dataset/sep/' + path, 'wb')
+    tweet = []
+    time = []
+    for line in fin.readlines():
+        try:
+            time.append(line.split('\t')[-1])
+        except:
+            break
+        tweet.append(line[:-11])
+    result = get_interval(tweet, time, 30)
+    pkl.dump(result, fout)
+    fout.close()
+    fin.close()
