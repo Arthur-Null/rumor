@@ -20,13 +20,13 @@ for (root, dir, files) in os.walk("dataset/train/"):
         l = pkl.load(open('dataset/train/' + f, 'rb'))
         pkl.dump(vec.transform(l).toarray(), f_train)
         # print(f.split('_')[1][0])
-        pkl.dump(f.split('_')[1][0], f_train)
+        pkl.dump(int(f.split('_')[1][0]), f_train)
 
 for (root, dir, files) in os.walk("dataset/test/"):
     for f in files:
         l = pkl.load(open('dataset/test/' + f, 'rb'))
         pkl.dump(vec.transform(l).toarray(), f_test)
         # print(f.split('_')[1][0])
-        pkl.dump(f.split('_')[1][0], f_test)
+        pkl.dump(int(f.split('_')[1][0]), f_test)
 
 
