@@ -207,7 +207,6 @@ class rnn:
             ))
             if epoch > 5 and losses[-1] > losses[-2] > losses[-3]:
                 break
-            epoch += 1
 
         total_training_time = time.time() - total_start_time
         print('\nTotal training time: %s' % str(timedelta(seconds=total_training_time)))
