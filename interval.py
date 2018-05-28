@@ -1,16 +1,21 @@
+import sys
 import numpy as np
 import pickle as pkl
+import os
+
 
 def get_interval(tweet, time, N):
     assert len(tweet) == len(time)
     start = np.min(time)
     end = np.max(time)
     L = float(end - start)
+    #print(time)
     l = L/N
     last = 0
     m = 0
     tail = 0
     while True:
+        print(l)
         flag = [False] * int(((end-start)/l))
         for t in time:
             index = int((t-start)/l)
@@ -47,17 +52,25 @@ def get_interval(tweet, time, N):
     return result
 
 def separate_file(path):
-    fin = open('Dataset/raw/' + path, 'r')
-    fout = open('Dataset/sep/' + path, 'wb')
+    fin = open('dataset/raw/' + path, 'r', encoding='utf8')
     tweet = []
     time = []
-    for line in fin.readlines():
+    lines = fin.readlines()
+    if len(lines) <= 2:
+        return
+    fout = open('dataset/sep/' + path[:-4] + '.pkl', 'wb')
+    for line in lines:
         try:
-            time.append(line.split('\t')[-1])
+            time.append(int(line.split('\t')[-1]))
+            tweet.append(line[:-11])
         except:
             break
-        tweet.append(line[:-11])
+    print(path)
     result = get_interval(tweet, time, 30)
     pkl.dump(result, fout)
     fout.close()
     fin.close()
+
+for (root, dir, files) in os.walk("dataset/raw"):
+    for f in files:
+        separate_file(f)

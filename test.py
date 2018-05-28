@@ -53,10 +53,10 @@ for i in list:
     list = api.statuses_lookup(tmp1)
 
     for tweet in list:
-        add_str = str(tweet.text) +"\t"+ str(datetime_timestamp(str(tweet.created_at)))
+        add_str = str(tweet.text).replace('\n', ' ') +"\t"+ str(datetime_timestamp(str(tweet.created_at)))
         output.append(add_str)
     str_list = [line + '\n' for line in output]
-    f = open(str("dataset/"+str(num)+"_"+str(flag)+".txt"), 'w+', newline='', encoding='utf-8')
+    f = open(str("dataset/raw/"+str(num)+"_"+str(flag)), 'w+', newline='', encoding='utf-8')
     f.writelines(str_list)
 
     num += 1
