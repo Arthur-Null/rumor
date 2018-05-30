@@ -162,7 +162,7 @@ class rnn:
                 self.labels: label,
                 self.seqlen: seqlen,
                 self.is_training: True,
-                self.keep_prob: 0.5
+                self.keep_prob: 1
             }
             fetches = [self.loss, self.prediction]
             result = self.sess.run(fetches, feed_dict=feed_dict)
@@ -220,7 +220,7 @@ class rnn:
 
 
 if __name__ == '__main__':
-    para = {'batch_size': 20, 'lr': 0.01, 'hidden_size': 500, 'embedding_size': 100}
+    para = {'batch_size': 20, 'lr': 0.01, 'hidden_size': 200, 'embedding_size': 500}
     path = './model'
     trainset = 'dataset/train.pkl'
     testset = 'dataset/test.pkl'
