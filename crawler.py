@@ -21,10 +21,10 @@ def datetime_timestamp(dt):
     return int(s)
 
 
-consumer_key = 'tf1HRSpWF2bcOKYRHMNhkOOhm'
-consumer_secret = 'cDLKHefGzcWZMmqDhgX6wIxH7HDO6KIePzpnznMqBDvQuScecm'
-access_token = '829926961120059393-nATX0AkV82wxrLxsyZjLa5xzbIIjFN7'
-access_secret = 'xGeqQ7pVkIe39xtSynWbxFaEHO1gKY4U0OH4cBMrvHW8L'
+consumer_key = '5WvQD5l4HeQMj0Ztonh9deVAb'
+consumer_secret = '09fjeNOInbUehnwL3cmNruaJHaf22SzhR7iB9SjsBVqDeIyKEs'
+access_token = '928893195705970688-0owztLK6IAEvEpmxPiQIlCmZyUKEU2E'
+access_secret = '1nK6RVt9sfZUnOH11Hz2mieUI0F9u2eCTqskRxBHiMI1S'
 
 auth = OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token,access_secret)
@@ -48,8 +48,8 @@ for i in id_list:
     cost = 0
     tweet_num = 2
     while(tweet_num < len(tmp)):
-        if num<= 500:  #从第几个event开始爬
-            break
+        # if num<= 499:    #从第几个event开始爬
+        #     break
         tmp1.append(tmp[tweet_num])
         cost += 1
         tweet_num += 1
@@ -57,8 +57,14 @@ for i in id_list:
             cost = 0
             list = api.statuses_lookup(tmp1)
             for tweet in list:
-                add_str = str(tweet.text).replace('\n', ' ').replace('\r', ' ') + "\t" + str(datetime_timestamp(str(tweet.created_at)))
-                output.append(add_str)
+                s = str(tweet.text)
+                s = s.replace('\r',' ')
+                s = s.replace('\n',' ')
+                if s != ('\t' or '\r' or "") and str(tweet.created_at) != ('\t' or '\r' or ""):
+                    add_str = s + "\t" + str(datetime_timestamp(str(tweet.created_at)))
+                    # print(s,str(tweet.created_at))
+                    # print(add_str)
+                    output.append(add_str)
             tmp1 = []
 
     # if len(tmp) > 102:
@@ -76,10 +82,8 @@ for i in id_list:
     num += 1
     print(num)
 
-    if num <= 500:  #从第几个event开始
-        continue
+    # if num <= 499:   #从第几个event开始
+    #     continue
     str_list = [line + '\n' for line in output]
-    f = open(str("dataset2/"+str(num)+"_"+str(flag)+".txt"), 'w+', newline='', encoding='utf-8')
+    f = open(str("dataset/"+str(num)+"_"+str(flag)+".txt"), 'w+', newline='',encoding='utf-8')
     f.writelines(str_list)
-
-
