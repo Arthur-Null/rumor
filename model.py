@@ -102,7 +102,7 @@ class rnn:
 
     def _build_graph(self):
         x = self.input
-        batchsize = tf.shape(x)[0]
+        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.relu)
         gru_cell = tf.contrib.rnn.GRUCell(self.para['hidden_size'])
         gru_cell = tf.nn.rnn_cell.DropoutWrapper(gru_cell, input_keep_prob=self.keep_prob,
                                                  output_keep_prob=self.keep_prob)
@@ -164,9 +164,9 @@ class rnn:
                 self.is_training: True,
                 self.keep_prob: 0.5
             }
-            fetches = [self.train_step, self.loss, self.prediction]
+            fetches = [self.loss, self.prediction]
             result = self.sess.run(fetches, feed_dict=feed_dict)
-            _, loss, pred = result
+            loss, pred = result
             losses.append(loss)
             preds += pred.tolist()
             labels += label

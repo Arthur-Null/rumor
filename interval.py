@@ -9,13 +9,11 @@ def get_interval(tweet, time, N):
     start = np.min(time)
     end = np.max(time)
     L = float(end - start)
-    #print(time)
     l = L/N
     last = 0
     m = 0
     tail = 0
     while True:
-        #print(l)
         flag = [False] * int(((end-start)/l))
         for t in time:
             index = int((t-start)/l)
@@ -25,7 +23,6 @@ def get_interval(tweet, time, N):
         m = 0
         tail = 0
         tmp = 0
-        #print(flag)
         for i in range(len(flag)):
             if flag[i]:
                 tmp += 1
