@@ -1,8 +1,8 @@
 import os
 import shutil
-path = 'dataset/'         # 替换为你的路径\
-traindir = 'train/'
-testdir =  'test/'
+path = 'dataset/sep'         # 替换为你的路径\
+traindir = 'dataset/train/'
+testdir =  'dataset/test/'
 
 dir = os.listdir(path)
 one = 0
