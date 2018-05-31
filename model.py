@@ -21,7 +21,7 @@ def getbatch(batchsize, f):
         if len(x) < 25:
             seqlen.append(len(x))
             for _ in range(len(x), 25):
-                x.append([0.] * 5000)
+                x.append([0.] * 1000)
         else:
             seqlen.append(25)
             x = x[:25]
@@ -33,10 +33,7 @@ def getbatch(batchsize, f):
         label.append(y)
     return data, label, seqlen
 
-
-
-
-class rnn:
+class basic_tf:
     def __init__(self, path, trainset, testset, para):
         self.graph = tf.Graph()
 
@@ -79,7 +76,7 @@ class rnn:
     def _define_inputs(self):
         self.input = tf.placeholder(
             tf.float32,
-            shape=[None, 25, 5000]
+            shape=[None, 25, 1000]
         )
         self.labels = tf.placeholder(
             tf.float32,
@@ -101,19 +98,7 @@ class rnn:
         self.sess.run(self.initializer)
 
     def _build_graph(self):
-        x = self.input
-        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.relu)
-        gru_cell = tf.contrib.rnn.GRUCell(self.para['hidden_size'])
-        gru_cell = tf.nn.rnn_cell.DropoutWrapper(gru_cell, input_keep_prob=self.keep_prob,
-                                                 output_keep_prob=self.keep_prob)
-        states_h, last_h = tf.nn.dynamic_rnn(gru_cell, x, self.seqlen, dtype=tf.float32)
-        output = tf.layers.dense(last_h, 2, tf.nn.softmax)
-        pred = output[:, 1]
-        self.prediction = output
-        loss = tf.losses.log_loss(self.labels, pred)
-        self.loss = loss
-        optimizer = tf.train.AdamOptimizer(learning_rate=self.para['lr'])
-        self.train_step = optimizer.minimize(loss)
+        raise NotImplementedError
 
     def train_one_epoch(self):
         fin = open(self.trainset, 'rb')
@@ -171,23 +156,26 @@ class rnn:
             preds += pred.tolist()
             labels += label
         preds = np.array(preds)
+        #print(preds[0])
         auc = roc_auc_score(labels, preds[:, 1])
         acc = accuracy_score(labels, np.argmax(preds, axis=1))
+        loss = log_loss(labels, preds[:, 1])
         print("AUC = " + "{:.4f}".format(auc))
         print("Accuracy = " + "{:.4f}".format(acc))
-        print("Loss = " + "{:.4f}".format(np.mean(losses)))
+        print("Loss = " + "{:.4f}".format(loss))
         return np.mean(losses), auc, acc
 
     def log(self, epoch, result, prefix):
         s = prefix + '\t' + str(epoch)
         for i in result:
             s += ('\t' + str(i))
-        fout = open(self.logs_path + 'log','a')
+        fout = open(self.logs_path + '/log','a')
         fout.write(s + '\n')
 
     def train_until_cov(self):
         epoch = 0
         losses = []
+        acc=[]
         total_start_time = time.time()
         while True:
             epoch += 1
@@ -198,14 +186,18 @@ class rnn:
             print('Time per train epoch: %s' % (
                 str(timedelta(seconds=time.time()-start_time))
             ))
-            start_time = time.time()
-            result = self.test()
-            losses.append(result[0])
-            self.log(epoch, result, 'test')
-            print('Time per test epoch: %s' % (
-                str(timedelta(seconds=time.time() - start_time))
-            ))
-            if epoch > 5 and losses[-1] > losses[-2] > losses[-3]:
+            if epoch % 1 == 0:
+                print('-' * 30, 'Testing', '-' * 30)
+                start_time = time.time()
+                result = self.test()
+                losses.append(result[0])
+                acc.append(result[2])
+                self.log(epoch, result, 'test')
+                print('Time per test epoch: %s' % (
+                    str(timedelta(seconds=time.time() - start_time))
+                ))
+            if epoch > 30 and losses[-1] > losses[-3] and losses[-2] > losses[-3]:
+                print(np.max(acc))
                 break
 
         total_training_time = time.time() - total_start_time
@@ -219,10 +211,52 @@ class rnn:
         print('Successfully load model from save path: %s' % self.save_path)
 
 
+class Basic_rnn(basic_tf):
+    def _build_graph(self):
+        x = self.input
+        x = tf.layers.dense(x, self.para['embedding_size'])
+        cell = tf.contrib.rnn.LSTMCell(num_units=self.para['hidden_size'])
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=self.keep_prob,
+                                                 output_keep_prob=self.keep_prob)
+        states_h, last_h = tf.nn.dynamic_rnn(cell, x, sequence_length=self.seqlen, dtype=tf.float32)
+        output = tf.layers.dense(last_h[0], 2, tf.nn.softmax)
+        pred = output[:, 1]
+        self.prediction = output
+        loss = tf.losses.log_loss(self.labels, pred)
+        self.loss = loss
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.para['lr'])
+        self.train_step = optimizer.minimize(loss)
+
+class Multilayer_rnn(basic_tf):
+    def _build_graph(self):
+        x = self.input
+        x = tf.layers.dense(x, self.para['embedding_size'])
+        multi_rnn_cell = tf.contrib.rnn.MultiRNNCell(
+            [tf.contrib.rnn.LSTMCell(size) for size in [self.para['hidden_size'], 2 * self.para['hidden_size']]])
+        outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
+                                           inputs=x,
+                                           dtype=tf.float32, sequence_length=self.seqlen)
+        index = tf.range(0, self.para['batch_size']) * 25 + (self.seqlen - 1)
+        outputs = tf.gather(tf.reshape(outputs, [-1, 2 * self.para['hidden_size']]), index)
+        outputs = tf.layers.dense(outputs, 2, tf.nn.softmax)
+        pred = outputs[:, 1]
+        self.prediction = outputs
+        loss = tf.losses.log_loss(self.labels, pred)
+        self.loss = loss
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.para['lr'])
+        self.train_step = optimizer.minimize(loss)
+
+class Attention_rnn(basic_tf):
+    def _build_graph(self):
+        x = self.input
+        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.sigmoid)
+
+
+
 if __name__ == '__main__':
-    para = {'batch_size': 20, 'lr': 0.01, 'hidden_size': 200, 'embedding_size': 500}
-    path = './model'
+    para = {'batch_size': 20, 'lr': 5e-4, 'hidden_size': 128, 'embedding_size': 100}
+    path = './model/Multi_rnn'
     trainset = 'dataset/train.pkl'
     testset = 'dataset/test.pkl'
-    model = rnn(path, trainset, testset, para)
+    model = Multilayer_rnn(path, trainset, testset, para)
     model.train_until_cov()

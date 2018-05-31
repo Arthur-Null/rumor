@@ -9,7 +9,7 @@ train = []
 for (root, dir, files) in os.walk("dataset/train/"):
     for f in files:
         train += pkl.load(open('dataset/train/' + f, 'rb'))
-vec = TfidfVectorizer(stop_words=my_stop_words, max_features=5000, max_df=0.8, min_df=3)
+vec = TfidfVectorizer(stop_words=['https', 'com','18cwlv', 'q1aqlp3sz5', 'breitbartreaderforandroid'], max_features=1000, min_df=5)
 vec.fit(train)
 # print(np.sum(vec.transform(train).toarray()[:5]))
 f_train = open("dataset/train.pkl", 'wb')
