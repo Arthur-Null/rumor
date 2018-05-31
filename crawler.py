@@ -58,9 +58,9 @@ for i in id_list:
             list = api.statuses_lookup(tmp1)
             for tweet in list:
                 s = str(tweet.text)
-                s = s.replace('\r',' ')
-                s = s.replace('\n',' ')
-                if s != ('\t' or '\r' or "") and str(tweet.created_at) != ('\t' or '\r' or ""):
+                s = s.replace('\r', ' ')
+                s = s.replace('\n', ' ')
+                if s not in ['\t', '\r', ""] and str(tweet.created_at) not in ['\t', '\r', ""]:
                     add_str = s + "\t" + str(datetime_timestamp(str(tweet.created_at)))
                     # print(s,str(tweet.created_at))
                     # print(add_str)
@@ -84,6 +84,8 @@ for i in id_list:
 
     # if num <= 499:   #从第几个event开始
     #     continue
+
     str_list = [line + '\n' for line in output]
-    f = open(str("dataset/"+str(num)+"_"+str(flag)+".txt"), 'w+', newline='',encoding='utf-8')
+    print(len(str_list))
+    f = open(str("dataset/twitter/"+str(num)+"_"+str(flag)), 'w+', newline='', encoding='utf-8')
     f.writelines(str_list)

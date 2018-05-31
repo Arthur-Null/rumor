@@ -175,6 +175,7 @@ class basic_tf:
     def train_until_cov(self):
         epoch = 0
         losses = []
+        acc=[]
         total_start_time = time.time()
         while True:
             epoch += 1
@@ -190,11 +191,13 @@ class basic_tf:
                 start_time = time.time()
                 result = self.test()
                 losses.append(result[0])
+                acc.append(result[2])
                 self.log(epoch, result, 'test')
                 print('Time per test epoch: %s' % (
                     str(timedelta(seconds=time.time() - start_time))
                 ))
-            if epoch > 20 and losses[-1] > losses[-3] and losses[-2] > losses[-3]:
+            if epoch > 30 and losses[-1] > losses[-3] and losses[-2] > losses[-3]:
+                print(np.max(acc))
                 break
 
         total_training_time = time.time() - total_start_time
@@ -211,7 +214,7 @@ class basic_tf:
 class Basic_rnn(basic_tf):
     def _build_graph(self):
         x = self.input
-        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.sigmoid)
+        x = tf.layers.dense(x, self.para['embedding_size'])
         cell = tf.contrib.rnn.LSTMCell(num_units=self.para['hidden_size'])
         cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=self.keep_prob,
                                                  output_keep_prob=self.keep_prob)
@@ -227,7 +230,7 @@ class Basic_rnn(basic_tf):
 class Multilayer_rnn(basic_tf):
     def _build_graph(self):
         x = self.input
-        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.sigmoid)
+        x = tf.layers.dense(x, self.para['embedding_size'])
         multi_rnn_cell = tf.contrib.rnn.MultiRNNCell(
             [tf.contrib.rnn.LSTMCell(size) for size in [self.para['hidden_size'], 2 * self.para['hidden_size']]])
         outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
@@ -243,8 +246,15 @@ class Multilayer_rnn(basic_tf):
         optimizer = tf.train.AdamOptimizer(learning_rate=self.para['lr'])
         self.train_step = optimizer.minimize(loss)
 
+class Attention_rnn(basic_tf):
+    def _build_graph(self):
+        x = self.input
+        x = tf.layers.dense(x, self.para['embedding_size'], tf.nn.sigmoid)
+
+
+
 if __name__ == '__main__':
-    para = {'batch_size': 20, 'lr': 5e-4, 'hidden_size': 200, 'embedding_size': 100}
+    para = {'batch_size': 20, 'lr': 5e-4, 'hidden_size': 128, 'embedding_size': 100}
     path = './model/Multi_rnn'
     trainset = 'dataset/train.pkl'
     testset = 'dataset/test.pkl'
