@@ -3,7 +3,7 @@ import time
 import re
 import os
 import json
-path = path = 'dataset/Weibo'
+path = 'dataset/Weibo'
 
 def readfile(file):     #read file
     f = open(file,"r")
