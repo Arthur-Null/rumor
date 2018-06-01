@@ -81,6 +81,7 @@ for i in id_list:
     #     output.append(add_str)
     num += 1
     print(num)
+    print(tweet_num)
 
     # if num <= 499:   #从第几个event开始
     #     continue

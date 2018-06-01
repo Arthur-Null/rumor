@@ -1,8 +1,8 @@
 import os
 import shutil
-path = 'dataset/sep'         # 替换为你的路径\
-traindir = 'dataset/train/'
-testdir =  'dataset/test/'
+path = 'dataset/weibo_sep'         # 替换为你的路径\
+traindir = 'dataset/weibo_train/'
+testdir =  'dataset/weibo_test/'
 
 dir = os.listdir(path)
 one = 0
@@ -14,8 +14,8 @@ for i in dir:
         zero+=1
 print(one,zero)
 
-train_one = 400
-train_zero =400
+train_one = 1900
+train_zero = 1900
 
 zero_num  = 0
 one_num = 0

@@ -1,3 +1,4 @@
+import re
 import sys
 import numpy as np
 import pickle as pkl
@@ -46,17 +47,18 @@ def get_interval(tweet, time, N):
         if i == len(time)-1:
             index -= 1
         if 0 <= index < m:
+            tweet[i] = re.sub('[’!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~]+？。，！\t丶〜', ' ', tweet[i])
             result[index] += (tweet[i] + ' ')
     return result
 
 def separate_file(path):
-    fin = open('dataset/raw2/' + path, 'r', encoding='utf8')
+    fin = open('dataset/weibo_raw/' + path, 'r', encoding='utf8')
     tweet = []
     time = []
     lines = fin.readlines()
     if len(lines) <= 2:
         return
-    fout = open('dataset/sep/' + path[:-4] + '.pkl', 'wb')
+    fout = open('dataset/weibo_sep/' + path + '.pkl', 'wb')
     for line in lines:
         try:
             time.append(int(line.split('\t')[-1]))
@@ -65,13 +67,13 @@ def separate_file(path):
             print(path)
             continue
     #print(len(time))
-    result = get_interval(tweet, time, 20)
+    result = get_interval(tweet, time, 50)
     print(len(result))
     pkl.dump(result, fout)
     fout.close()
     fin.close()
 
-for (root, dir, files) in os.walk("dataset/raw2"):
+for (root, dir, files) in os.walk("dataset/weibo_raw"):
     for f in files:
         separate_file(f)
 
